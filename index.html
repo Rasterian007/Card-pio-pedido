@@ -253,13 +253,22 @@ const bebidas = [
   {nome: "Johnnie Walker (dose)", valor: "R$ 14,00"},
   {nome: "White Horse (dose)", valor: "R$ 10,00"},
   {nome: "Black White (dose)", valor: "R$ 8,00"},
-  {nome: "Caju", valor: "0"},
-  {nome: "Caja", valor: "0"},
-  {nome: "Manga", valor: "0"},
-  {nome: "Goiaba", valor: "0"},
-  {nome: "Abacaxi", valor: "0"},
-  {nome: "Maracujá", valor: "0"},
 ];
+
+// Sucos
+const sucos = [
+  {nome: "Caju", valor: "R$ 7,00"},
+  {nome: "Caja", valor: "R$ 7,00"},
+  {nome: "Manga", valor: "R$ 7,00"},
+  {nome: "Goiaba", valor: "R$ 7,00"},
+  {nome: "Abacaxi", valor: "R$ 7,00"},
+  {nome: "Maracujá", valor: "R$ 7,00"},
+  {nome: "Laranja", valor: "R$ 7,00"},
+  {nome: "Acerola", valor: "R$ 7,00"},
+  {nome: "Morango", valor: "R$ 7,00"},
+  {nome: "Uva", valor: "R$ 7,00"},
+];
+
 
 // ✅ FUNÇÃO CORRIGIDA: impede sabores duplicados
 function atualizarOpcoesSabores() {
@@ -384,8 +393,8 @@ function atualizarCarrinho(){
       const precoBorda = bordaObj ? bordaObj.precos[tamanho] : 0;
       total += precoSabores + precoBorda;
     } else {
-      const bebida = bebidas.find(b => b.nome === p.texto);
-      if(bebida){
+      (b => b.nome === p.texto);
+      if(bebida){const bebida = bebidas.find
         const valorNum = Number(bebida.valor.replace("R$","").replace(",","."))||0;
         total += valorNum;
       }
@@ -397,28 +406,39 @@ function atualizarCarrinho(){
 }
 
 function finalizarPedido(){
-  if(pedido.length === 0){ alert("Adicione itens ao carrinho antes de finalizar!"); return; }
+  if(pedido.length === 0){ 
+    alert("Adicione itens ao carrinho antes de finalizar!"); 
+    return; 
+  }
 
   const obs = document.getElementById("obs").value;
   let texto = "";
-  pedido.forEach(p=>{
-    if(p.texto.includes("Borda")){
-      const partes = p.texto.split(" - ");
-      const mesa = partes[0].replace("Mesa ","");
-      const saboresETamanho = partes[1];
-      const borda = partes[2].replace("Borda: ","");
-      const tamanhoMatch = saboresETamanho.match(/\(([^)]+)\)/);
-      const tamanho = tamanhoMatch ? tamanhoMatch[1] : "?";
-      const sabores = saboresETamanho.replace(/\([^)]+\)/,"").trim();
-      texto += `Pedido Mesa ${mesa}:\n🍕 Pizza: ${sabores}\nTamanho: ${tamanho}\nBorda: ${borda}\n\n`;
-    } else {
-      texto += `🥤 Bebida: ${p.texto}\n\n`;
-    }
+  
+  // Separar pizzas e bebidas
+  const pizzas = pedido.filter(p => p.texto.includes("Borda"));
+  const bebidasPedido = pedido.filter(p => !p.texto.includes("Borda"));
+
+  pizzas.forEach(p => {
+    const partes = p.texto.split(" - ");
+    const mesa = partes[0].replace("Mesa ","");
+    const saboresETamanho = partes[1];
+    const borda = partes[2].replace("Borda: ","");
+    const tamanhoMatch = saboresETamanho.match(/\(([^)]+)\)/);
+    const tamanho = tamanhoMatch ? tamanhoMatch[1] : "?";
+    const sabores = saboresETamanho.replace(/\([^)]+\)/,"").trim();
+    texto += `Pedido Mesa ${mesa}:\n🍕 Pizza: ${sabores}\nTamanho: ${tamanho}\nBorda: ${borda}\n`;
   });
-  if(obs) texto += `📝 Observações: ${obs}`;
+
+  if(obs) texto += `📝 Observações: ${obs}\n`;
+
+  bebidasPedido.forEach(b => {
+    texto += `🥤 Bebida: ${b.texto}\n`;
+  });
+
   const urlBase = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(texto)}`;
   window.open(urlBase,"_blank");
 }
+
 
 // ---------- GERAR MENU ----------
 function gerarMenu(){
@@ -437,6 +457,8 @@ function gerarMenu(){
   criarSecao("🍕 Pizzas Salgadas",pizzasSalgadas);
   criarSecao("🍰 Pizzas Doces",pizzasDoces);
   criarSecao("🥤 Bebidas",bebidas,false);
+  criarSecao("🍹 Sucos", sucos, false);
+
 }
 gerarMenu();
 </script>
