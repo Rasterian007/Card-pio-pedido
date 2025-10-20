@@ -78,6 +78,7 @@ select, textarea { width:100%; padding:8px; margin:5px 0; border-radius:5px; bor
     <select id="sabor1"><option value="">-- Sabor 1 --</option></select>
     <select id="sabor2"><option value="">-- Sabor 2 --</option></select>
     <select id="sabor3"><option value="">-- Sabor 3 --</option></select>
+    <select id="sabor4"><option value="">-- Sabor 4 --</option></select>
     <br><br>
 
     <label for="tamanhoPizza">📏 Escolha o tamanho:</label>
@@ -117,7 +118,6 @@ select, textarea { width:100%; padding:8px; margin:5px 0; border-radius:5px; bor
   <div id="modalCarrinho-content">
     <h3>🛒 Seu Carrinho</h3>
     <div id="itens"></div>
-    <div class="valorInfo" id="totalCarrinho">Total do pedido: R$0,00</div>
 
     <textarea id="obs" placeholder="Observações (ex: sem cebola, borda recheada...)"></textarea><br>
     
@@ -250,7 +250,7 @@ const bebidas = [
 ];
 
 function atualizarOpcoesSabores() {
-  const selects = ["sabor1","sabor2","sabor3"].map(id => document.getElementById(id));
+  const selects = ["sabor1","sabor2","sabor3","sabor4"].map(id => document.getElementById(id));
   const valores = selects.map(sel => sel.value);
   const todas = pizzasSalgadas.concat(pizzasDoces);
   selects.forEach((sel, idx) => {
@@ -267,12 +267,14 @@ function atualizarOpcoesSabores() {
     });
   });
 }
-["sabor1","sabor2","sabor3"].forEach(id=>document.getElementById(id).addEventListener("change", atualizarOpcoesSabores));
+["sabor1","sabor2","sabor3","sabor4"].forEach(id=>document.getElementById(id).addEventListener("change", atualizarOpcoesSabores));
 
 function confirmarSabores(){
     const s1 = document.getElementById("sabor1").value;
-    const s2 = document.getElementById("sabor2").value;
-    const s3 = document.getElementById("sabor3").value;
+const s2 = document.getElementById("sabor2").value;
+const s3 = document.getElementById("sabor3").value;
+const s4 = document.getElementById("sabor4").value;
+
     const tamanho = document.getElementById("tamanhoPizza").value;
     const borda = document.getElementById("borda").value;
     const mesa = document.getElementById("mesa").value;
@@ -281,8 +283,9 @@ function confirmarSabores(){
     if(!mesa){ alert("Escolha a mesa antes de adicionar ao carrinho!"); return; }
 
     let sabores = [s1];
-    if(s2 && s2 !== s1) sabores.push(s2);
-    if(s3 && s3 !== s1 && s3 !== s2) sabores.push(s3);
+if(s2 && s2 !== s1) sabores.push(s2);
+if(s3 && s3 !== s1 && s3 !== s2) sabores.push(s3);
+if(s4 && s4 !== s1 && s4 !== s2 && s4 !== s3) sabores.push(s4);
 
     const texto = `Mesa ${mesa} - ${sabores.join(" + ")} (${tamanho}) - Borda: ${borda}`;
     pedido.push({texto, id: Date.now()});
@@ -296,6 +299,7 @@ function abrirModal(nomeSabor=null){
   document.getElementById("sabor1").value="";
   document.getElementById("sabor2").value="";
   document.getElementById("sabor3").value="";
+  document.getElementById("sabor4").value="";
   document.getElementById("tamanhoPizza").value="P";
   document.getElementById("mesa").value="";
   atualizarBordas();
