@@ -370,13 +370,23 @@ function atualizarCarrinho(){
     return;
   }
 
-  pedido.forEach(p => {
-    const div = document.createElement("div");
-    div.className = "item-carrinho";
-    div.innerHTML = `<span>${p.texto}</span><button onclick="removerItem(${p.id})">🗑️ Remover</button>`;
-    itensDiv.appendChild(div);
+  // Separar pizzas e bebidas/sucos
+  const pizzas = pedido.filter(p => p.texto.includes("Borda"));
+  const bebidasPedidos = pedido.filter(p => !p.texto.includes("Borda"));
 
-    if(p.texto.includes("Borda")){
+  // Mostrar PIZZAS
+  if(pizzas.length > 0){
+    const tituloPizza = document.createElement("h4");
+    tituloPizza.textContent = "🍕 Pizzas";
+    itensDiv.appendChild(tituloPizza);
+
+    pizzas.forEach(p => {
+      const div = document.createElement("div");
+      div.className = "item-carrinho";
+      div.innerHTML = `<span>${p.texto}</span><button onclick="removerItem(${p.id})">🗑️ Remover</button>`;
+      itensDiv.appendChild(div);
+
+      // cálculo de preço pizza
       const partes = p.texto.split(" - ");
       const saboresETamanho = partes[1];
       const bordaNome = partes[2].replace("Borda: ","");
@@ -395,14 +405,30 @@ function atualizarCarrinho(){
       const bordaObj = bordasRecheadas.find(b => b.nome === bordaNome);
       const precoBorda = bordaObj ? bordaObj.precos[tamanho] : 0;
       total += precoSabores + precoBorda;
-    } else {
-      (b => b.nome === p.texto);
-      if(bebida){const bebida = bebidas.find
+    });
+  }
+
+  // Mostrar BEBIDAS/SUCOS
+  if(bebidasPedidos.length > 0){
+    const tituloBebidas = document.createElement("h4");
+    tituloBebidas.textContent = "🥤 Bebidas e Sucos";
+    itensDiv.appendChild(tituloBebidas);
+
+    bebidasPedidos.forEach(p => {
+      const div = document.createElement("div");
+      div.className = "item-carrinho";
+      div.innerHTML = `<span>${p.texto}</span><button onclick="removerItem(${p.id})">🗑️ Remover</button>`;
+      itensDiv.appendChild(div);
+
+      // cálculo de preço bebida/suco
+      let bebida = bebidas.find(b => b.nome === p.texto);
+      if(!bebida) bebida = sucos.find(s => s.nome === p.texto);
+      if(bebida){
         const valorNum = Number(bebida.valor.replace("R$","").replace(",","."))||0;
         total += valorNum;
       }
-    }
-  });
+    });
+  }
 
   const f = v => v.toFixed(2).replace(".",",");
   //itensDiv.innerHTML += `<div class="valorInfo">Total do pedido: R$${f(total)}</div>`;
@@ -417,10 +443,11 @@ function finalizarPedido(){
   const obs = document.getElementById("obs").value;
   let texto = "";
   
-  // Separar pizzas e bebidas
+  // Separar pizzas e bebidas/sucos
   const pizzas = pedido.filter(p => p.texto.includes("Borda"));
-  const bebidasPedido = pedido.filter(p => !p.texto.includes("Borda"));
+  const bebidasPedidos = pedido.filter(p => !p.texto.includes("Borda"));
 
+  // PIZZAS
   pizzas.forEach(p => {
     const partes = p.texto.split(" - ");
     const mesa = partes[0].replace("Mesa ","");
@@ -434,9 +461,13 @@ function finalizarPedido(){
 
   if(obs) texto += `📝 Observações: ${obs}\n`;
 
-  bebidasPedido.forEach(b => {
-    texto += `🥤 Bebida: ${b.texto}\n`;
-  });
+  // BEBIDAS/SUCOS
+  if(bebidasPedidos.length > 0){
+    texto += `\n🥤 Bebidas e Sucos:\n`;
+    bebidasPedidos.forEach(b => {
+      texto += `- ${b.texto}\n`;
+    });
+  }
 
   const urlBase = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(texto)}`;
   window.open(urlBase,"_blank");
