@@ -133,7 +133,7 @@ select, textarea { width:100%; padding:8px; margin:5px 0; border-radius:5px; bor
 </div>
 
 <script>
-const numeroWhatsApp = "5587991471583";
+const numeroWhatsApp = "5587981347413";
 let pedido = [];
 
 // ---------- BORDAS ----------
@@ -252,9 +252,16 @@ const bebidas = [
   {nome: "Brahma 600 ml", valor: "R$ 10,00"},
   {nome: "Johnnie Walker (dose)", valor: "R$ 14,00"},
   {nome: "White Horse (dose)", valor: "R$ 10,00"},
-  {nome: "Black White (dose)", valor: "R$ 8,00"}
+  {nome: "Black White (dose)", valor: "R$ 8,00"},
+  {nome: "Caju", valor: "0"},
+  {nome: "Caja", valor: "0"},
+  {nome: "Manga", valor: "0"},
+  {nome: "Goiaba", valor: "0"},
+  {nome: "Abacaxi", valor: "0"},
+  {nome: "Maracujá", valor: "0"},
 ];
 
+// ✅ FUNÇÃO CORRIGIDA: impede sabores duplicados
 function atualizarOpcoesSabores() {
   const selects = ["sabor1","sabor2","sabor3","sabor4"].map(id => document.getElementById(id));
   const todas = pizzasSalgadas.concat(pizzasDoces);
@@ -263,15 +270,15 @@ function atualizarOpcoesSabores() {
     const atual = sel.value;
     sel.innerHTML = `<option value="">-- ${sel.id.toUpperCase()} --</option>`;
 
-    // Pega os valores selecionados nos outros selects
-    const selecionadosOutros = selects
+    // Coleta os sabores selecionados nos outros selects
+    const selecionados = selects
       .filter((_, i) => i !== idx)
       .map(s => s.value)
-      .filter(v => v); // remove vazios
+      .filter(v => v);
 
     todas.forEach(p => {
-      // Só adiciona se não estiver selecionado nos outros selects ou for o atual
-      if (!selecionadosOutros.includes(p.nome) || p.nome === atual) {
+      // 🔒 Só adiciona o sabor se ainda não estiver selecionado
+      if (!selecionados.includes(p.nome) || p.nome === atual) {
         const option = document.createElement("option");
         option.value = p.nome;
         option.textContent = p.nome;
@@ -282,49 +289,55 @@ function atualizarOpcoesSabores() {
   });
 }
 
+// Reaplica a atualização em todas as mudanças
 ["sabor1","sabor2","sabor3","sabor4"].forEach(id =>
   document.getElementById(id).addEventListener("change", atualizarOpcoesSabores)
 );
 
-
+// ✅ VERIFICAÇÃO EXTRA AO CONFIRMAR
 function confirmarSabores(){
-    const s1 = document.getElementById("sabor1").value;
-const s2 = document.getElementById("sabor2").value;
-const s3 = document.getElementById("sabor3").value;
-const s4 = document.getElementById("sabor4").value;
+  const sabores = [
+    document.getElementById("sabor1").value,
+    document.getElementById("sabor2").value,
+    document.getElementById("sabor3").value,
+    document.getElementById("sabor4").value
+  ].filter(s => s);
 
-    const tamanho = document.getElementById("tamanhoPizza").value;
-    const borda = document.getElementById("borda").value;
-    const mesa = document.getElementById("mesa").value;
+  const tamanho = document.getElementById("tamanhoPizza").value;
+  const borda = document.getElementById("borda").value;
+  const mesa = document.getElementById("mesa").value;
 
-    if(!s1){ alert("Escolha pelo menos o sabor 1!"); return; }
-    if(!mesa){ alert("Escolha a mesa antes de adicionar ao carrinho!"); return; }
+  if (!sabores.length) { alert("Escolha pelo menos um sabor!"); return; }
+  if (!mesa) { alert("Escolha a mesa antes de adicionar ao carrinho!"); return; }
 
-    let sabores = [s1];
-if(s2 && s2 !== s1) sabores.push(s2);
-if(s3 && s3 !== s1 && s3 !== s2) sabores.push(s3);
-if(s4 && s4 !== s1 && s4 !== s2 && s4 !== s3) sabores.push(s4);
+  // 🔒 Impede sabores repetidos na confirmação
+  const duplicados = sabores.filter((s, i) => sabores.indexOf(s) !== i);
+  if (duplicados.length > 0) {
+    alert("Você escolheu sabores repetidos! Escolha sabores diferentes.");
+    return;
+  }
 
-    const texto = `Mesa ${mesa} - ${sabores.join(" + ")} (${tamanho}) - Borda: ${borda}`;
-    pedido.push({texto, id: Date.now()});
-    atualizarContadorCarrinho();
-    fecharModal();
+  const texto = `Mesa ${mesa} - ${sabores.join(" + ")} (${tamanho}) - Borda: ${borda}`;
+  pedido.push({texto, id: Date.now()});
+  atualizarContadorCarrinho();
+  fecharModal();
 }
 
 function fecharModal(){ document.getElementById("modal").style.display="none"; }
 function abrirModal(nomeSabor=null){
   document.getElementById("modal").style.display="flex";
-  document.getElementById("sabor1").value="";
-  document.getElementById("sabor2").value="";
-  document.getElementById("sabor3").value="";
-  document.getElementById("sabor4").value="";
+  ["sabor1","sabor2","sabor3","sabor4"].forEach(id => document.getElementById(id).value = "");
   document.getElementById("tamanhoPizza").value="P";
   document.getElementById("mesa").value="";
   atualizarBordas();
   atualizarOpcoesSabores();
-  if(nomeSabor) document.getElementById("sabor1").value = nomeSabor;
+  if(nomeSabor) {
+    document.getElementById("sabor1").value = nomeSabor;
+    atualizarOpcoesSabores();
+  }
 }
 
+// Carrinho e funções originais
 function adicionarBebida(nome){ pedido.push({texto:nome,id:Date.now()}); atualizarContadorCarrinho(); }
 function removerItem(id){ pedido=pedido.filter(p=>p.id!==id); atualizarCarrinho(); atualizarContadorCarrinho(); }
 function atualizarContadorCarrinho(){
@@ -342,7 +355,6 @@ function atualizarCarrinho(){
 
   if(pedido.length === 0){
     itensDiv.innerHTML = "<p>Seu carrinho está vazio 🍕</p>";
-    document.getElementById("totalCarrinho").textContent = "Total do pedido: R$0,00";
     return;
   }
 
@@ -381,7 +393,7 @@ function atualizarCarrinho(){
   });
 
   const f = v => v.toFixed(2).replace(".",",");
-  document.getElementById("totalCarrinho").textContent = `Total do pedido: R$${f(total)}`;
+  //itensDiv.innerHTML += `<div class="valorInfo">Total do pedido: R$${f(total)}</div>`;
 }
 
 function finalizarPedido(){
@@ -404,7 +416,6 @@ function finalizarPedido(){
     }
   });
   if(obs) texto += `📝 Observações: ${obs}`;
-
   const urlBase = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(texto)}`;
   window.open(urlBase,"_blank");
 }
@@ -427,9 +438,9 @@ function gerarMenu(){
   criarSecao("🍰 Pizzas Doces",pizzasDoces);
   criarSecao("🥤 Bebidas",bebidas,false);
 }
-
 gerarMenu();
 </script>
+
 
 </body>
 </html>
