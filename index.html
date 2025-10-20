@@ -94,7 +94,7 @@ select, textarea { width:100%; padding:8px; margin:5px 0; border-radius:5px; bor
 
     <label for="mesa"></label>
     <select id="mesa">
-      <option value="">-- Selecione a mesa 🪑</option>
+      <option value="">-- Selecione a mesa -🪑</option>
       <option value="0">0</option>
       <option value="1">1</option>
       <option value="2">2</option>
@@ -257,13 +257,21 @@ const bebidas = [
 
 function atualizarOpcoesSabores() {
   const selects = ["sabor1","sabor2","sabor3","sabor4"].map(id => document.getElementById(id));
-  const valores = selects.map(sel => sel.value);
   const todas = pizzasSalgadas.concat(pizzasDoces);
+
   selects.forEach((sel, idx) => {
     const atual = sel.value;
     sel.innerHTML = `<option value="">-- ${sel.id.toUpperCase()} --</option>`;
+
+    // Pega os valores selecionados nos outros selects
+    const selecionadosOutros = selects
+      .filter((_, i) => i !== idx)
+      .map(s => s.value)
+      .filter(v => v); // remove vazios
+
     todas.forEach(p => {
-      if (!valores.includes(p.nome) || p.nome === atual) {
+      // Só adiciona se não estiver selecionado nos outros selects ou for o atual
+      if (!selecionadosOutros.includes(p.nome) || p.nome === atual) {
         const option = document.createElement("option");
         option.value = p.nome;
         option.textContent = p.nome;
@@ -273,7 +281,11 @@ function atualizarOpcoesSabores() {
     });
   });
 }
-["sabor1","sabor2","sabor3","sabor4"].forEach(id=>document.getElementById(id).addEventListener("change", atualizarOpcoesSabores));
+
+["sabor1","sabor2","sabor3","sabor4"].forEach(id =>
+  document.getElementById(id).addEventListener("change", atualizarOpcoesSabores)
+);
+
 
 function confirmarSabores(){
     const s1 = document.getElementById("sabor1").value;
