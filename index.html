@@ -114,9 +114,7 @@ select, textarea { width:100%; padding:8px; margin:5px 0; border-radius:5px; bor
       <option value="17">17</option>
     </select>
 
-    <div class="valorInfo" id="precoTamanho">Preço do tamanho: R$0,00</div>
-    <div class="valorInfo" id="precoBorda">Preço da borda: R$0,00</div>
-    <div class="valorInfo" id="totalPizza">Total: R$0,00</div>
+    
 
     <button onclick="confirmarSabores()">Adicionar ao Carrinho</button>
     <button onclick="fecharModal()" style="background:#b71c1c;">Cancelar</button>
@@ -406,7 +404,7 @@ function atualizarCarrinho(){
     }
   });
 
-  document.getElementById("totalCarrinho").textContent=`Total do pedido: R$${total.toFixed(2).replace(".",",")}`;
+  document.getElementById("totalCarrinho").textContent=``; // deixa vazio
 }
 
 function finalizarPedido(){
