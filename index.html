@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pizzaria Andrade 🍕🍹</title>
+<style>
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(rgba(255,151,23,0.4), rgba(255,151,23,0.4)), url('images/fundo-nordestino.jpg') no-repeat center center fixed;
+  background-size: cover;
+  margin: 0;
+  padding: 0;
+  color: #000;
+}
+header { background:#d32f2f; color:white; text-align:center; padding:15px 10px;}
+h1 { margin:0;}
+.container { max-width:900px; margin:20px auto; padding:10px;}
+.secao { margin-bottom:30px; }
+.secao h2 { color:#d32f2f; margin-bottom:10px; border-bottom:2px solid #d32f2f; padding-bottom:5px;}
+.item { background:white; padding:15px; margin-bottom:10px; border-radius:10px; box-shadow:0 0 5px rgba(0,0,0,0.1); display:flex; justify-content:space-between; align-items:flex-start;}
+.item-info { flex:1; margin-right:10px;}
+.item h3 { margin:0 0 5px; color:#d32f2f;}
+.item p { margin:0; font-size:0.9em;}
+.preco { margin-top:5px; font-weight:bold; color:#388e3c; font-size:0.9em;}
+button { background:#d32f2f; color:white; border:none; border-radius:5px; padding:8px 12px; cursor:pointer;}
+button:hover { background:#b71c1c;}
+#modal, #modalCarrinho { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:999;}
+#modal-content, #modalCarrinho-content { background:white; padding:20px; border-radius:10px; max-width:400px; text-align:center; max-height:80%; overflow-y:auto;}
+select, textarea { width:100%; padding:8px; margin:5px 0; border-radius:5px; border:1px solid #ccc;}
+.item-carrinho { display:flex; justify-content:space-between; align-items:center; margin:5px 0; border-bottom:1px solid #ccc; padding-bottom:5px;}
+.item-carrinho button { padding:2px 6px; font-size:0.8em; background:#b71c1c;}
+#btnCarrinho {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #089126;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 50px;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+#contadorCarrinho {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #d32f2f;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: bold;
+  display: none;
+}
+.valorInfo {margin-top:10px; font-weight:bold; color:#d32f2f; font-size:0.95em;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🍕 Pizzaria Andrade 🍕🍹</h1>
+  <p>Escolha até 3 sabores e o tamanho da sua pizza, ou adicione bebidas!</p>
+</header>
+
+<div class="container" id="menu"></div>
+
+<!-- Botão Carrinho -->
+<button id="btnCarrinho" onclick="abrirCarrinho()">
+  🛒 Carrinho <span id="contadorCarrinho">0</span>
+</button>
+
+<!-- Modal Pizza -->
+<div id="modal">
+  <div id="modal-content">
+    <h3>🍕 Escolha até 3 sabores</h3>
+    <select id="sabor1"><option value="">-- Sabor 1 --</option></select>
+    <select id="sabor2"><option value="">-- Sabor 2 --</option></select>
+    <select id="sabor3"><option value="">-- Sabor 3 --</option></select>
+    <br><br>
+
+    <label for="tamanhoPizza">📏 Escolha o tamanho:</label>
+    <select id="tamanhoPizza">
+      <option value="P">Pequena (P)</option>
+      <option value="M">Média (M)</option>
+      <option value="G">Grande (G)</option>
+      <option value="GG">Gigante (GG)</option>
+    </select>
+
+    <label for="borda">🍞 Escolha a borda recheada:</label>
+    <select id="borda"></select>
+
+    <label for="mesa">🪑 Escolha a mesa:</label>
+    <select id="mesa">
+      <option value="">-- Selecione a mesa --</option>
+      <option value="0">0</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+      <option value="9">9</option>
+      <option value="10">10</option>
+      <option value="11">11</option>
+      <option value="12">12</option>
+      <option value="13">13</option>
+      <option value="14">14</option>
+      <option value="15">15</option>
+      <option value="16">16</option>
+      <option value="17">17</option>
+    </select>
+
+    <div class="valorInfo" id="precoTamanho">Preço do tamanho: R$0,00</div>
+    <div class="valorInfo" id="precoBorda">Preço da borda: R$0,00</div>
+    <div class="valorInfo" id="totalPizza">Total: R$0,00</div>
+
+    <button onclick="confirmarSabores()">Adicionar ao Carrinho</button>
+    <button onclick="fecharModal()" style="background:#b71c1c;">Cancelar</button>
+  </div>
+</div>
+
+<!-- Modal Carrinho -->
+<div id="modalCarrinho">
+  <div id="modalCarrinho-content">
+    <h3>🛒 Seu Carrinho</h3>
+    <div id="itens"></div>
+    <div class="valorInfo" id="totalCarrinho">Total do pedido: R$0,00</div>
+
+    <textarea id="obs" placeholder="Observações (ex: sem cebola, borda recheada...)"></textarea><br>
+    
+    <button id="btnFinalizar" onclick="finalizarPedido()">Finalizar Pedido via WhatsApp</button>
+    <button onclick="fecharCarrinho()" style="background:#b71c1c;margin-top:10px;">Fechar</button>
+  </div>
+</div>
+
+<script>
+// Número WhatsApp
+const numeroWhatsApp = "5587981347413";
+let pedido = [];
+
+// ---------- BORDAS ----------
+const bordasRecheadas = [
+  {nome:"Sem borda", precos:{P:0,M:0,G:0,GG:0}},
+  {nome:"Catupiry", precos:{P:8,M:8,G:8,GG:8}},
+  {nome:"Mussarela", precos:{P:12,M:12,G:12,GG:12}},
+  {nome:"Cheddar", precos:{P:10,M:10,G:10,GG:10}},
+  {nome:"Cream Cheese", precos:{P:15,M:15,G:15,GG:15}},
+  {nome:"Chocolate", precos:{P:10,M:10,G:10,GG:10}}
+];
+function atualizarBordas() {
+  const select = document.getElementById("borda");
+  const tamanho = document.getElementById("tamanhoPizza").value;
+  select.innerHTML = "";
+  bordasRecheadas.forEach(b => {
+    const preco = b.precos[tamanho];
+    const option = document.createElement("option");
+    option.value = b.nome;
+    option.textContent = `${b.nome} – R$${preco.toFixed(2).replace('.', ',')}`;
+    select.appendChild(option);
+  });
+  atualizarTotal();
+}
+document.getElementById("tamanhoPizza").addEventListener("change", atualizarBordas);
+document.getElementById("borda").addEventListener("change", atualizarTotal);
+
+// Pizzas Salgadas (copiado do seu código original)
+const pizzasSalgadas = [
+  {nome:"A MODA DA CASA", desc:"Ovo, presunto, palmito, mussarela, ervilha e milho.", precos:{P:34,M:44,G:54,GG:64}},
+  {nome:"A MODA DO PIZZAIOLO", desc:"Frango, presunto, tomate e mussarela.", precos:{P:32,M:42,G:52,GG:62}},
+  {nome:"A MODA ITALIANA", desc:"Frango, calabresa, champignon, mussarela e catupiry.", precos:{P:30,M:40,G:50,GG:60}},
+  {nome:"ALHO E ÓLEO", desc:"Alho frito e mussarela.", precos:{P:30,M:40,G:50,GG:60}},
+  {nome:"ATUM", desc:"Atum, mussarela e cebola.", precos:{P:35,M:45,G:55,GG:65}},
+  {nome:"ALITE", desc:"Alite e mussarela.", precos:{P:40,M:50,G:60,GG:70}},
+  {nome:"BAIACATU", desc:"Calabresa, catupiry e mussarela.", precos:{P:30,M:40,G:50,GG:60}},
+  {nome:"BACALHOADA", desc:"Bacalhau, ovos, cebola, tomate e mussarela.", precos:{P:40,M:50,G:60,GG:70}},
+  {nome:"BAIANA", desc:"Calabresa, ovo, pimenta e mussarela.", precos:{P:33,M:43,G:53,GG:63}},
+  {nome:"BACON I", desc:"Bacon e mussarela.", precos:{P:30,M:40,G:50,GG:60}},
+  {nome:"BACON II", desc:"Bacon, mussarela e catupiry.", precos:{P:31,M:41,G:51,GG:61}},
+  {nome:"BOLONHESA", desc:"Carne moída e mussarela.", precos:{P:34,M:44,G:54,GG:64}},
+  {nome:"CALABRESA MINEIRA", desc:"Calabresa, milho e mussarela.", precos:{P:30,M:40,G:50,GG:60}},
+  {nome:"CARNE DE SOL", desc:"Cebola roxa, mussarela, cream cheese, pimentão e carne de sol.", precos:{P:35,M:45,G:55,GG:65}},
+  {nome:"CAMPONESA", desc:"Frango, tomate, gorgonzola, mussarela e manjericão.", precos:{P:35,M:45,G:55,GG:65}},
+  {nome:"CLARA E COSMO", desc:"Peito de peru, gorgonzola, tomate e mussarela.", precos:{P:30,M:40,G:50,GG:60}},
+  {nome:"CALABRESA", desc:"Calabresa, mussarela e cebola.", precos:{P:32,M:42,G:52,GG:62}},
+  {nome:"CALZONE ABERTA", desc:"Frango, milho, presunto e mussarela.", precos:{P:31,M:41,G:51,GG:61}},
+  {nome:"CALZONE FECHADA", desc:"Frango, milho, presunto e mussarela.", precos:{P:31,M:41,G:51,GG:61}},
+  {nome:"CAIPIRA", desc:"Frango, milho, bacon, catupiry e mussarela.", precos:{P:30,M:40,G:50,GG:60}},
+  {nome:"CARIJO", desc:"Frango, calabresa, mussarela e milho.", precos:{P:30,M:40,G:50,GG:60}},
+  {nome:"CINDERELA", desc:"Frango, catupiry, palmito e mussarela.", precos:{P:31,M:41,G:51,GG:61}},
+  {nome:"CARMELITA", desc:"Brócolis, catupiry, mussarela e bacon.", precos:{P:30,M:40,G:50,GG:60}},
+  {nome:"DO COMPADRE", desc:"Frango, mussarela, bacon e cheddar.", precos:{P:32,M:42,G:52,GG:62}},
+  {nome:"ESCAROLA", desc:"Escarola, alho, mussarela e bacon.", precos:{P:30,M:40,G:50,GG:60}},
+  {nome:"ESPANHOLA", desc:"Calabresa, bacon, presunto e mussarela.", precos:{P:52,M:62,G:72,GG:72}},
+  {nome:"FRANGO", desc:"Frango e mussarela.", precos:{P:30,M:40,G:50,GG:60}},
+  {nome:"FRANGO COM CATUPIRY", desc:"Frango, catupiry e mussarela.", precos:{P:34,M:44,G:54,GG:64}},
+  {nome:"FRANGO COM CHEDDAR", desc:"Frango, cheddar e mussarela.", precos:{P:32,M:38,G:48,GG:58}},
+  {nome:"FRANCESA", desc:"Frango, presunto, bacon, mussarela e milho.", precos:{P:32,M:38,G:48,GG:58}},
+  {nome:"FRANGO COM CREAM CHEESE", desc:"Frango, cream cheese e mussarela.", precos:{P:34,M:44,G:54,GG:64}},
+  {nome:"GORGONZOLA", desc:"Gorgonzola, tomate e mussarela.", precos:{P:34,M:44,G:54,GG:64}},
+  {nome:"CAMARÃO", desc:"Camarão, catupiry e mussarela.", precos:{P:35,M:45,G:55,GG:65}},
+  {nome:"GREGA", desc:"Lombo, palmito e mussarela.", precos:{P:33,M:43,G:53,GG:63}},
+  {nome:"ITALIANA", desc:"Champignon, atum, tomate e mussarela.", precos:{P:34,M:44,G:54,GG:64}},
+  {nome:"LOMBO CANADENSE", desc:"Lombo, catupiry e mussarela.", precos:{P:34,M:44,G:54,GG:64}},
+  {nome:"MARGUERITA", desc:"Provolone, mussarela, manjericão e tomate.", precos:{P:33,M:43,G:53,GG:63}},
+  {nome:"MUSSARELA", desc:"Mussarela, molho de tomate e orégano.", precos:{P:34,M:44,G:54,GG:64}},
+  {nome:"MILHO VERDE", desc:"Milho verde, catupiry e mussarela.", precos:{P:33,M:43,G:53,GG:63}},
+  {nome:"MISTA", desc:"Presunto, calabresa e mussarela.", precos:{P:33,M:43,G:53,GG:63}},
+  {nome:"NORDESTINA", desc:"Charque, catupiry, mussarela e queijo coalho.", precos:{P:34,M:44,G:54,GG:64}},
+  {nome:"NAPOLITANA", desc:"Parmesão, tomate e mussarela.", precos:{P:33,M:43,G:53,GG:63}},
+  {nome:"PIZZA ANDRADE", desc:"Rúcula, mussarela e tomate seco.", precos:{P:33,M:43,G:53,GG:63}},
+  {nome:"PERUANA", desc:"Atum, palmito, catupiry e mussarela.", precos:{P:34,M:44,G:54,GG:64}},
+  {nome:"PORTUGUESA", desc:"Presunto, ovo, cebola e mussarela.", precos:{P:30,M:40,G:50,GG:60}},
+  {nome:"PALMITO", desc:"Palmito e mussarela.", precos:{P:34,M:44,G:54,GG:64}},
+  {nome:"PERNAMBUCANA", desc:"Frango, tomate, bacon e mussarela.", precos:{P:34,M:44,G:54,GG:64}},
+  {nome:"PRESUNTO", desc:"Presunto e mussarela.", precos:{P:30,M:40,G:50,GG:60}},
+  {nome:"PEPERONE", desc:"Peperone e mussarela.", precos:{P:36,M:46,G:56,GG:66}},
+  {nome:"PIZZA MONTADA PELO CLIENTE", desc:"ATÉ 7 INGREDIENTES EXCETO CAMARÃO.", precos:{P:40,M:45,G:55,GG:60}},
+  {nome:"SICILIANA", desc:"Champignon, bacon, cebola e mussarela.", precos:{P:35,M:45,G:55,GG:65}},
+  {nome:"SABOROSA", desc:"Bacon, catupiry, batata palha e mussarela.", precos:{P:34,M:44,G:54,GG:64}},
+  {nome:"VEGETARIANA", desc:"Mussarela, palmito, cebola, tomate, atum e champignon.", precos:{P:35,M:45,G:55,GG:65}},
+  {nome:"2 QUEIJOS", desc:"Mussarela e catupiry.", precos:{P:30,M:40,G:50,GG:60}},
+  {nome:"3 QUEIJOS", desc:"Mussarela, catupiry e provolone.", precos:{P:33,M:43,G:53,GG:63}},
+  {nome:"4 QUEIJOS", desc:"Mussarela, cheddar, catupiry e provolone.", precos:{P:34,M:44,G:54,GG:64}},
+  {nome:"5 QUEIJOS", desc:"Mussarela, catupiry, cheddar, gorgonzola e parmesão.", precos:{P:35,M:45,G:55,GG:65}},
+  {nome:"6 QUEIJOS", desc:"Mussarela, catupiry, cheddar, parmesão, gorgonzola e cream cheese.", precos:{P:37,M:47,G:57,GG:67}}
+];
+
+// Pizzas Doces
+const pizzasDoces = [
+  {nome:"Brigadeiro", desc:"Chocolate e granulado.", precos:{P:32,M:42,G:52,GG:62}},
+  {nome:"Bis", desc:"Chocolate e Bis.", precos:{P:33,M:43,G:53,GG:63}},
+  {nome:"Coco", desc:"Chocolate e coco.", precos:{P:32,M:42,G:52,GG:62}},
+  {nome:"Chocomusa", desc:"Chocolate e mussarela.", precos:{P:33,M:43,G:53,GG:63}},
+  {nome:"Choconana", desc:"Chocolate e banana.", precos:{P:33,M:43,G:53,GG:63}},
+  {nome:"Banana", desc:"Banana, açúcar, canela e mussarela.", precos:{P:32,M:42,G:52,GG:62}},
+  {nome:"Romeu e Julieta", desc:"Mussarela e goiabada.", precos:{P:33,M:43,G:53,GG:63}},
+  {nome:"Sonho de Valsa", desc:"Chocolate e Sonho de Valsa.", precos:{P:33,M:43,G:53,GG:63}},
+  {nome:"M&Ms", desc:"Chocolate e M&Ms.", precos:{P:32,M:42,G:52,GG:62}},
+  {nome:"Morango", desc:"Chocolate e morango.", precos:{P:34,M:44,G:54,GG:64}},
+  {nome:"Doce de Leite", desc:"Doce de leite e mussarela.", precos:{P:33,M:33,G:33,GG:33}}
+];
+
+// Bebidas
+const bebidas = [
+  {nome: "Água", valor: "R$ 3,00"},
+  {nome: "Suco (copo)", valor: "R$ 7,00"},
+  {nome: "Suco (jarra)", valor: "R$ 15,00"},
+  {nome: "Refrigerante (lata)", valor: "R$ 6,00"},
+  {nome: "Refrigerante (1 litro)", valor: "R$ 10,00"},
+  {nome: "Refrigerante (2 litros)", valor: "R$ 15,00"},
+  {nome: "Heineken long neck", valor: "R$ 10,00"},
+  {nome: "Heineken 600 ml", valor: "R$ 17,00"},
+  {nome: "Budweiser long neck", valor: "R$ 8,00"},
+  {nome: "Budweiser 600 ml", valor: "R$ 12,00"},
+  {nome: "Stella 600 ml", valor: "R$ 12,00"},
+  {nome: "Brahma 600 ml", valor: "R$ 10,00"},
+  {nome: "Johnnie Walker (dose)", valor: "R$ 14,00"},
+  {nome: "White Horse (dose)", valor: "R$ 10,00"},
+  {nome: "Black White (dose)", valor: "R$ 8,00"}
+];
+
+function atualizarOpcoesSabores() {
+  const selects = ["sabor1","sabor2","sabor3"].map(id => document.getElementById(id));
+  const valores = selects.map(sel => sel.value);
+  const todas = pizzasSalgadas.concat(pizzasDoces);
+  selects.forEach((sel, idx) => {
+    const atual = sel.value;
+    sel.innerHTML = `<option value="">-- ${sel.id.toUpperCase()} --</option>`;
+    todas.forEach(p => {
+      if (!valores.includes(p.nome) || p.nome === atual) {
+        const option = document.createElement("option");
+        option.value = p.nome;
+        option.textContent = p.nome;
+        if (p.nome === atual) option.selected = true;
+        sel.appendChild(option);
+      }
+    });
+  });
+  atualizarTotal();
+}
+["sabor1","sabor2","sabor3"].forEach(id=>document.getElementById(id).addEventListener("change", atualizarOpcoesSabores));
+
+function atualizarTotal(){
+  const s1=document.getElementById("sabor1").value;
+  const s2=document.getElementById("sabor2").value;
+  const s3=document.getElementById("sabor3").value;
+  const borda=document.getElementById("borda").value;
+  const tamanho=document.getElementById("tamanhoPizza").value;
+
+  let sabores=[];
+  if(s1) sabores.push(s1);
+  if(s2 && s2!==s1) sabores.push(s2);
+  if(s3 && s3!==s1 && s3!==s2) sabores.push(s3);
+
+  let precoSabores=0;
+  const todasPizzas = pizzasSalgadas.concat(pizzasDoces);
+  sabores.forEach(sab=>{
+    const pizza=todasPizzas.find(p=>p.nome===sab);
+    if(pizza){
+      const preco=Number(pizza.precos[tamanho])||0;
+      if(preco>precoSabores) precoSabores=preco;
+    }
+  });
+
+  const bordaObj = bordasRecheadas.find(b=>b.nome===borda);
+  const precoBorda = bordaObj ? bordaObj.precos[tamanho] : 0;
+  const precoTotal = precoSabores + precoBorda;
+
+  const f=v=>v.toFixed(2).replace('.',',');
+  document.getElementById("precoTamanho").textContent=`Preço do tamanho: R$ ${f(precoSabores)}`;
+  document.getElementById("precoBorda").textContent=`Preço da borda: R$ ${f(precoBorda)}`;
+  document.getElementById("totalPizza").textContent=`Total: R$ ${f(precoTotal)}`;
+}
+
+// ---------- MODAL E CARRINHO ----------
+function abrirModal(nomeSabor=null){
+  document.getElementById("modal").style.display="flex";
+  document.getElementById("sabor1").value = nomeSabor || "";
+  document.getElementById("sabor2").value = "";
+  document.getElementById("sabor3").value = "";
+  document.getElementById("tamanhoPizza").value="P";
+  document.getElementById("mesa").value="";
+  atualizarBordas();
+  atualizarOpcoesSabores();
+}
+function fecharModal(){ document.getElementById("modal").style.display="none"; atualizarTotal(); }
+
+function confirmarSabores(){
+  const s1=document.getElementById("sabor1").value;
+  if(!s1){ alert("Escolha pelo menos um sabor!"); return; }
+  const mesa=document.getElementById("mesa").value;
+  if(!mesa){ alert("Escolha a mesa!"); return; }
+  const s2=document.getElementById("sabor2").value;
+  const s3=document.getElementById("sabor3").value;
+  const borda=document.getElementById("borda").value;
+  const tamanho=document.getElementById("tamanhoPizza").value;
+  let sabores=[s1];
+  if(s2 && s2!==s1) sabores.push(s2);
+  if(s3 && s3!==s1 && s3!==s2) sabores.push(s3);
+  pedido.push({
+    texto:`Mesa ${mesa} - ${sabores.join(" + ")} (${tamanho}) - Borda: ${borda}`,
+    id:Date.now()
+  });
+  atualizarContadorCarrinho();
+  fecharModal();
+}
+
+function adicionarBebida(nome){ pedido.push({texto:nome,id:Date.now()}); atualizarContadorCarrinho(); }
+function removerItem(id){ pedido=pedido.filter(p=>p.id!==id); atualizarCarrinho(); atualizarContadorCarrinho(); }
+function atualizarContadorCarrinho(){
+  const contador=document.getElementById("contadorCarrinho");
+  contador.textContent=pedido.length;
+  contador.style.display=pedido.length>0?"inline-block":"none";
+}
+function abrirCarrinho(){ document.getElementById("modalCarrinho").style.display="flex"; atualizarCarrinho(); }
+function fecharCarrinho(){ document.getElementById("modalCarrinho").style.display="none"; }
+
+function atualizarCarrinho(){
+  const itensDiv=document.getElementById("itens"); 
+  itensDiv.innerHTML="";
+  let total=0;
+
+  if(pedido.length===0){
+    itensDiv.innerHTML="<p>Seu carrinho está vazio 🍕</p>"; 
+    document.getElementById("totalCarrinho").textContent = "Total do pedido: R$0,00";
+    return;
+  }
+
+  pedido.forEach(p=>{
+    const div=document.createElement("div");
+    div.className="item-carrinho";
+    div.innerHTML=`<span>${p.texto}</span><button onclick="removerItem(${p.id})">🗑️ Remover</button>`;
+    itensDiv.appendChild(div);
+
+    if(p.texto.includes("Borda")){
+      const partes=p.texto.split(" - ");
+      const saboresETamanho=partes[1];
+      const bordaNome=partes[2].replace("Borda: ","");
+      const tamanhoMatch=saboresETamanho.match(/\(([^)]+)\)/);
+      const tamanho=tamanhoMatch?tamanhoMatch[1]:"?";
+      const sabores=saboresETamanho.replace(/\([^)]+\)/,"").split("+").map(s=>s.trim());
+
+      const todasPizzas=pizzasSalgadas.concat(pizzasDoces);
+      let precoSabores=0;
+      sabores.forEach(sab=>{
+        const pizza=todasPizzas.find(pi=>pi.nome===sab);
+        if(pizza){
+          const preco=Number(pizza.precos[tamanho])||0;
+          if(preco>precoSabores) precoSabores=preco;
+        }
+      });
+
+      const bordaObj=bordasRecheadas.find(b=>b.nome===bordaNome);
+      const precoBorda=bordaObj?bordaObj.precos[tamanho]:0;
+      total+=precoSabores+precoBorda;
+    } else {
+      const bebida=bebidas.find(b=>b.nome===p.texto);
+      if(bebida){
+        const valorNum=Number(bebida.valor.replace("R$","").replace(",","."))||0;
+        total+=valorNum;
+      }
+    }
+  });
+
+  document.getElementById("totalCarrinho").textContent=`Total do pedido: R$${total.toFixed(2).replace(".",",")}`;
+}
+
+function finalizarPedido(){
+  if(pedido.length===0){ 
+    alert("Adicione itens ao carrinho antes de finalizar!"); 
+    return; 
+  }
+
+  const obs = document.getElementById("obs").value; // Observações
+
+  let texto = ""; // Começa vazio
+
+  // Percorre os itens do pedido
+  pedido.forEach(p=>{
+    if(p.texto.includes("Borda")){ // É pizza
+      const partes = p.texto.split(" - ");
+      const mesa = partes[0].replace("Mesa ","");
+      const saboresETamanho = partes[1];
+      const borda = partes[2].replace("Borda: ","");
+      const tamanhoMatch = saboresETamanho.match(/\(([^)]+)\)/);
+      const tamanho = tamanhoMatch ? tamanhoMatch[1] : "?";
+      const sabores = saboresETamanho.replace(/\([^)]+\)/,"").trim();
+
+      texto += `Pedido Mesa ${mesa}:\n🍕 Pizza: ${sabores}\nTamanho: ${tamanho}\nBorda: ${borda}\n\n`;
+    } else { // É bebida
+      texto += `🥤 Bebida: ${p.texto}\n\n`;
+    }
+  });
+
+  if(obs) texto += `📝 Observações: ${obs}`;
+
+  const urlBase = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(texto)}`;
+  window.open(urlBase, "_blank");
+}
+
+
+// ---------- GERAR MENU ----------
+function gerarMenu(){
+  const menu=document.getElementById("menu");
+  function criarSecao(titulo,itens,isPizza=true){
+    const secao=document.createElement("div"); secao.className="secao";
+    secao.innerHTML=`<h2>${titulo}</h2>`;
+    itens.forEach(item=>{
+      const div=document.createElement("div"); div.className="item";
+      div.innerHTML=`<div class="item-info"><h3>${item.nome}</h3><p>${item.desc||item.valor||''}</p>${isPizza?`<div class="preco">P: R$${item.precos.P.toFixed(2)}, M: R$${item.precos.M.toFixed(2)}, G: R$${item.precos.G.toFixed(2)}, GG: R$${item.precos.GG.toFixed(2)}</div>`:""}</div>
+      <button onclick="${isPizza?`abrirModal('${item.nome}')`:`adicionarBebida('${item.nome}')`}">Adicionar</button>`;
+      secao.appendChild(div);
+    });
+    menu.appendChild(secao);
+  }
+  criarSecao("🍕 Pizzas Salgadas",pizzasSalgadas);
+  criarSecao("🍰 Pizzas Doces",pizzasDoces);
+  criarSecao("🥤 Bebidas",bebidas,false);
+}
+
+// ---------- INICIALIZAÇÃO ----------
+gerarMenu();
+</script>
+</body>
+</html>
