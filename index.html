@@ -105,16 +105,7 @@ select, textarea { width:100%; padding:8px; margin:5px 0; border-radius:5px; bor
       <option value="8">8</option>
       <option value="9">9</option>
       <option value="10">10</option>
-      <option value="11">11</option>
-      <option value="12">12</option>
-      <option value="13">13</option>
-      <option value="14">14</option>
-      <option value="15">15</option>
-      <option value="16">16</option>
-      <option value="17">17</option>
     </select>
-
-    
 
     <button onclick="confirmarSabores()">Adicionar ao Carrinho</button>
     <button onclick="fecharModal()" style="background:#b71c1c;">Cancelar</button>
@@ -136,7 +127,6 @@ select, textarea { width:100%; padding:8px; margin:5px 0; border-radius:5px; bor
 </div>
 
 <script>
-// Número WhatsApp
 const numeroWhatsApp = "5587981347413";
 let pedido = [];
 
@@ -160,10 +150,8 @@ function atualizarBordas() {
     option.textContent = `${b.nome} – R$${preco.toFixed(2).replace('.', ',')}`;
     select.appendChild(option);
   });
-  atualizarTotal();
 }
 document.getElementById("tamanhoPizza").addEventListener("change", atualizarBordas);
-document.getElementById("borda").addEventListener("change", atualizarTotal);
 
 // Pizzas Salgadas (copiado do seu código original)
 const pizzasSalgadas = [
@@ -278,73 +266,41 @@ function atualizarOpcoesSabores() {
       }
     });
   });
-  atualizarTotal();
 }
 ["sabor1","sabor2","sabor3"].forEach(id=>document.getElementById(id).addEventListener("change", atualizarOpcoesSabores));
 
-function atualizarTotal(){
-  const s1=document.getElementById("sabor1").value;
-  const s2=document.getElementById("sabor2").value;
-  const s3=document.getElementById("sabor3").value;
-  const borda=document.getElementById("borda").value;
-  const tamanho=document.getElementById("tamanhoPizza").value;
+function confirmarSabores(){
+    const s1 = document.getElementById("sabor1").value;
+    const s2 = document.getElementById("sabor2").value;
+    const s3 = document.getElementById("sabor3").value;
+    const tamanho = document.getElementById("tamanhoPizza").value;
+    const borda = document.getElementById("borda").value;
+    const mesa = document.getElementById("mesa").value;
 
-  let sabores=[];
-  if(s1) sabores.push(s1);
-  if(s2 && s2!==s1) sabores.push(s2);
-  if(s3 && s3!==s1 && s3!==s2) sabores.push(s3);
+    if(!s1){ alert("Escolha pelo menos o sabor 1!"); return; }
+    if(!mesa){ alert("Escolha a mesa antes de adicionar ao carrinho!"); return; }
 
-  let precoSabores=0;
-  const todasPizzas = pizzasSalgadas.concat(pizzasDoces);
-  sabores.forEach(sab=>{
-    const pizza=todasPizzas.find(p=>p.nome===sab);
-    if(pizza){
-      const preco=Number(pizza.precos[tamanho])||0;
-      if(preco>precoSabores) precoSabores=preco;
-    }
-  });
+    let sabores = [s1];
+    if(s2 && s2 !== s1) sabores.push(s2);
+    if(s3 && s3 !== s1 && s3 !== s2) sabores.push(s3);
 
-  const bordaObj = bordasRecheadas.find(b=>b.nome===borda);
-  const precoBorda = bordaObj ? bordaObj.precos[tamanho] : 0;
-  const precoTotal = precoSabores + precoBorda;
-
-  const f=v=>v.toFixed(2).replace('.',',');
-  document.getElementById("precoTamanho").textContent=`Preço do tamanho: R$ ${f(precoSabores)}`;
-  document.getElementById("precoBorda").textContent=`Preço da borda: R$ ${f(precoBorda)}`;
-  document.getElementById("totalPizza").textContent=`Total: R$ ${f(precoTotal)}`;
+    const texto = `Mesa ${mesa} - ${sabores.join(" + ")} (${tamanho}) - Borda: ${borda}`;
+    pedido.push({texto, id: Date.now()});
+    atualizarContadorCarrinho();
+    fecharModal();
 }
 
-// ---------- MODAL E CARRINHO ----------
+function fecharModal(){ document.getElementById("modal").style.display="none"; }
 function abrirModal(nomeSabor=null){
   document.getElementById("modal").style.display="flex";
-  document.getElementById("sabor1").value = nomeSabor || "";
-  document.getElementById("sabor2").value = "";
-  document.getElementById("sabor3").value = "";
+  document.getElementById("sabor1").value="";
+  document.getElementById("sabor2").value="";
+  document.getElementById("sabor3").value="";
   document.getElementById("tamanhoPizza").value="P";
   document.getElementById("mesa").value="";
   atualizarBordas();
   atualizarOpcoesSabores();
-}
-function fecharModal(){ document.getElementById("modal").style.display="none"; atualizarTotal(); }
-
-function confirmarSabores(){
-  const s1=document.getElementById("sabor1").value;
-  if(!s1){ alert("Escolha pelo menos um sabor!"); return; }
-  const mesa=document.getElementById("mesa").value;
-  if(!mesa){ alert("Escolha a mesa!"); return; }
-  const s2=document.getElementById("sabor2").value;
-  const s3=document.getElementById("sabor3").value;
-  const borda=document.getElementById("borda").value;
-  const tamanho=document.getElementById("tamanhoPizza").value;
-  let sabores=[s1];
-  if(s2 && s2!==s1) sabores.push(s2);
-  if(s3 && s3!==s1 && s3!==s2) sabores.push(s3);
-  pedido.push({
-    texto:`Mesa ${mesa} - ${sabores.join(" + ")} (${tamanho}) - Borda: ${borda}`,
-    id:Date.now()
-  });
-  atualizarContadorCarrinho();
-  fecharModal();
+  if(nomeSabor) document.getElementById("sabor1").value = nomeSabor;
 }
 
 function adicionarBebida(nome){ pedido.push({texto:nome,id:Date.now()}); atualizarContadorCarrinho(); }
@@ -358,68 +314,61 @@ function abrirCarrinho(){ document.getElementById("modalCarrinho").style.display
 function fecharCarrinho(){ document.getElementById("modalCarrinho").style.display="none"; }
 
 function atualizarCarrinho(){
-  const itensDiv=document.getElementById("itens"); 
-  itensDiv.innerHTML="";
-  let total=0;
+  const itensDiv = document.getElementById("itens");
+  itensDiv.innerHTML = "";
+  let total = 0;
 
-  if(pedido.length===0){
-    itensDiv.innerHTML="<p>Seu carrinho está vazio 🍕</p>"; 
+  if(pedido.length === 0){
+    itensDiv.innerHTML = "<p>Seu carrinho está vazio 🍕</p>";
     document.getElementById("totalCarrinho").textContent = "Total do pedido: R$0,00";
     return;
   }
 
-  pedido.forEach(p=>{
-    const div=document.createElement("div");
-    div.className="item-carrinho";
-    div.innerHTML=`<span>${p.texto}</span><button onclick="removerItem(${p.id})">🗑️ Remover</button>`;
+  pedido.forEach(p => {
+    const div = document.createElement("div");
+    div.className = "item-carrinho";
+    div.innerHTML = `<span>${p.texto}</span><button onclick="removerItem(${p.id})">🗑️ Remover</button>`;
     itensDiv.appendChild(div);
 
     if(p.texto.includes("Borda")){
-      const partes=p.texto.split(" - ");
-      const saboresETamanho=partes[1];
-      const bordaNome=partes[2].replace("Borda: ","");
-      const tamanhoMatch=saboresETamanho.match(/\(([^)]+)\)/);
-      const tamanho=tamanhoMatch?tamanhoMatch[1]:"?";
-      const sabores=saboresETamanho.replace(/\([^)]+\)/,"").split("+").map(s=>s.trim());
-
-      const todasPizzas=pizzasSalgadas.concat(pizzasDoces);
-      let precoSabores=0;
-      sabores.forEach(sab=>{
-        const pizza=todasPizzas.find(pi=>pi.nome===sab);
+      const partes = p.texto.split(" - ");
+      const saboresETamanho = partes[1];
+      const bordaNome = partes[2].replace("Borda: ","");
+      const tamanhoMatch = saboresETamanho.match(/\(([^)]+)\)/);
+      const tamanho = tamanhoMatch ? tamanhoMatch[1] : "?";
+      const sabores = saboresETamanho.replace(/\([^)]+\)/,"").split("+").map(s=>s.trim());
+      const todasPizzas = pizzasSalgadas.concat(pizzasDoces);
+      let precoSabores = 0;
+      sabores.forEach(sab => {
+        const pizza = todasPizzas.find(pi => pi.nome === sab);
         if(pizza){
-          const preco=Number(pizza.precos[tamanho])||0;
-          if(preco>precoSabores) precoSabores=preco;
+          const preco = Number(pizza.precos[tamanho]) || 0;
+          if(preco > precoSabores) precoSabores = preco;
         }
       });
-
-      const bordaObj=bordasRecheadas.find(b=>b.nome===bordaNome);
-      const precoBorda=bordaObj?bordaObj.precos[tamanho]:0;
-      total+=precoSabores+precoBorda;
+      const bordaObj = bordasRecheadas.find(b => b.nome === bordaNome);
+      const precoBorda = bordaObj ? bordaObj.precos[tamanho] : 0;
+      total += precoSabores + precoBorda;
     } else {
-      const bebida=bebidas.find(b=>b.nome===p.texto);
+      const bebida = bebidas.find(b => b.nome === p.texto);
       if(bebida){
-        const valorNum=Number(bebida.valor.replace("R$","").replace(",","."))||0;
-        total+=valorNum;
+        const valorNum = Number(bebida.valor.replace("R$","").replace(",","."))||0;
+        total += valorNum;
       }
     }
   });
 
-  document.getElementById("totalCarrinho").textContent=``; // deixa vazio
+  const f = v => v.toFixed(2).replace(".",",");
+  document.getElementById("totalCarrinho").textContent = `Total do pedido: R$${f(total)}`;
 }
 
 function finalizarPedido(){
-  if(pedido.length===0){ 
-    alert("Adicione itens ao carrinho antes de finalizar!"); 
-    return; 
-  }
+  if(pedido.length === 0){ alert("Adicione itens ao carrinho antes de finalizar!"); return; }
 
-  const obs = document.getElementById("obs").value; // Observações
-
-  let texto = ""; // Começa vazio
-
-  // Percorre os itens do pedido
+  const obs = document.getElementById("obs").value;
+  let texto = "";
   pedido.forEach(p=>{
-    if(p.texto.includes("Borda")){ // É pizza
+    if(p.texto.includes("Borda")){
       const partes = p.texto.split(" - ");
       const mesa = partes[0].replace("Mesa ","");
       const saboresETamanho = partes[1];
@@ -427,19 +376,16 @@ function finalizarPedido(){
       const tamanhoMatch = saboresETamanho.match(/\(([^)]+)\)/);
       const tamanho = tamanhoMatch ? tamanhoMatch[1] : "?";
       const sabores = saboresETamanho.replace(/\([^)]+\)/,"").trim();
-
       texto += `Pedido Mesa ${mesa}:\n🍕 Pizza: ${sabores}\nTamanho: ${tamanho}\nBorda: ${borda}\n\n`;
-    } else { // É bebida
+    } else {
       texto += `🥤 Bebida: ${p.texto}\n\n`;
     }
   });
-
   if(obs) texto += `📝 Observações: ${obs}`;
 
   const urlBase = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(texto)}`;
-  window.open(urlBase, "_blank");
+  window.open(urlBase,"_blank");
 }
-
 
 // ---------- GERAR MENU ----------
 function gerarMenu(){
@@ -460,8 +406,8 @@ function gerarMenu(){
   criarSecao("🥤 Bebidas",bebidas,false);
 }
 
-// ---------- INICIALIZAÇÃO ----------
 gerarMenu();
 </script>
+
 </body>
 </html>
