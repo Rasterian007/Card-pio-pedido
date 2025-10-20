@@ -61,7 +61,7 @@ select, textarea { width:100%; padding:8px; margin:5px 0; border-radius:5px; bor
 
 <header>
   <h1>🍕 Pizzaria Andrade 🍕🍹</h1>
-  <p>Escolha até 3 sabores e o tamanho da sua pizza, ou adicione bebidas!</p>
+  <p>Escolha até 4 sabores e o tamanho da sua pizza, ou adicione bebidas!</p>
 </header>
 
 <div class="container" id="menu"></div>
@@ -74,27 +74,27 @@ select, textarea { width:100%; padding:8px; margin:5px 0; border-radius:5px; bor
 <!-- Modal Pizza -->
 <div id="modal">
   <div id="modal-content">
-    <h3>🍕 Escolha até 3 sabores</h3>
+    <h3>🍕 Escolha até 4 sabores</h3>
     <select id="sabor1"><option value="">-- Sabor 1 --</option></select>
     <select id="sabor2"><option value="">-- Sabor 2 --</option></select>
     <select id="sabor3"><option value="">-- Sabor 3 --</option></select>
     <select id="sabor4"><option value="">-- Sabor 4 --</option></select>
     <br><br>
 
-    <label for="tamanhoPizza">📏 Escolha o tamanho:</label>
+    <label for="tamanhoPizza"></label>
     <select id="tamanhoPizza">
-      <option value="P">Pequena (P)</option>
-      <option value="M">Média (M)</option>
-      <option value="G">Grande (G)</option>
-      <option value="GG">Gigante (GG)</option>
+      <option value="P">Tamanho Pequena (P)</option>
+      <option value="M">Tamanho Média (M)</option>
+      <option value="G">Tamanho Grande (G)</option>
+      <option value="GG">Tamanho Gigante (GG)</option>
     </select>
 
-    <label for="borda">🍞 Escolha a borda recheada:</label>
+    <label for="borda"></label>
     <select id="borda"></select>
 
-    <label for="mesa">🪑 Escolha a mesa:</label>
+    <label for="mesa"></label>
     <select id="mesa">
-      <option value="">-- Selecione a mesa --</option>
+      <option value="">-- Selecione a mesa 🪑</option>
       <option value="0">0</option>
       <option value="1">1</option>
       <option value="2">2</option>
